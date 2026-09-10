@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Check-in">
+  <rect width="64" height="64" rx="14" fill="#0c2d6b"/>
+  <rect x="12" y="14" width="40" height="36" rx="5" fill="#f6f3ee"/>
+  <rect x="12" y="14" width="40" height="12" rx="5" fill="#1b4fbf"/>
+  <rect x="12" y="21" width="40" height="5" fill="#1b4fbf"/>
+  <circle cx="22" cy="36" r="5" fill="#c5d4f5"/>
+  <rect x="30" y="32" width="16" height="3" rx="1.5" fill="#0c2d6b"/>
+  <rect x="30" y="38" width="12" height="3" rx="1.5" fill="#8aa0c8"/>
+</svg>

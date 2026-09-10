@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#0c2d6b" />
+    <meta
+      name="description"
+      content="Scan Kearny High School ID cards to log tardy check-ins and export the list."
+    />
+    <title>Kearny Check-In</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="site.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">K</span>
+          <div>
+            <p class="brand-kicker" id="school-name">Kearny High School</p>
+            <h1>Tardy Check-In</h1>
+          </div>
+        </div>
+        <button class="icon-btn" type="button" data-open-settings aria-label="Settings">
+          Settings
+        </button>
+      </header>
+
+      <section class="status-card" aria-live="polite">
+        <div>
+          <p class="eyebrow" id="today-label">Today</p>
+          <p class="clock" id="live-clock">--:--</p>
+          <p class="start-line">
+            School starts at <strong id="start-time-label">8:45 AM</strong>
+          </p>
+        </div>
+        <p class="tardy-flag" id="now-tardy-flag">On time window</p>
+      </section>
+
+      <section class="actions">
+        <button class="btn btn-primary" type="button" data-open-scanner>
+          Scan student ID
+        </button>
+        <div class="action-row">
+          <button class="btn btn-ghost" type="button" data-upload-photo>
+            Upload or take photo
+          </button>
+          <button class="btn btn-ghost" type="button" data-manual-entry>
+            Type it in
+          </button>
+        </div>
+        <input
+          id="photo-input"
+          type="file"
+          accept="image/*"
+          capture="environment"
+          hidden
+        />
+      </section>
+
+      <section class="log">
+        <div class="log-head">
+          <div>
+            <h2>Check-ins</h2>
+            <p class="log-meta" id="log-summary">No scans yet</p>
+          </div>
+          <label class="date-field">
+            <span class="sr-only">View date</span>
+            <input id="view-date" type="date" />
+          </label>
+        </div>
+        <div class="export-row">
+          <button class="btn btn-small" type="button" data-export-csv>
+            Export CSV
+          </button>
+          <button class="btn btn-small" type="button" data-export-xlsx>
+            Export Excel
+          </button>
+        </div>
+        <ul class="record-list" id="record-list"></ul>
+        <p class="empty" id="empty-state">
+          No check-ins for this day. Scan an ID card or enter a student manually.
+        </p>
+      </section>
+    </div>
+
+    <dialog id="scanner-dialog" class="overlay">
+      <div class="overlay-panel scanner-panel">
+        <header class="overlay-head">
+          <h2>Scan ID card</h2>
+          <button class="icon-btn" type="button" data-close-scanner>Close</button>
+        </header>
+        <p class="hint">
+          Fill the frame with the whole badge — name, ID number, and barcode.
+        </p>
+        <div class="viewfinder">
+          <video id="camera" autoplay playsinline muted></video>
+          <div class="guide" aria-hidden="true"></div>
+        </div>
+        <p class="camera-error" id="camera-error" hidden></p>
+        <div class="overlay-actions">
+          <button class="btn btn-primary" type="button" data-capture>
+            Capture card
+          </button>
+          <button class="btn btn-ghost" type="button" data-close-scanner>
+            Cancel
+          </button>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="process-dialog" class="overlay">
+      <div class="overlay-panel process-panel">
+        <h2>Reading the card</h2>
+        <img id="preview-image" alt="Captured student ID" />
+        <p class="process-status" id="process-status">Looking for the barcode…</p>
+        <div class="progress" aria-hidden="true">
+          <div class="progress-bar" id="progress-bar"></div>
+        </div>
+      </div>
+    </dialog>
+
+    <dialog id="confirm-dialog" class="overlay">
+      <form class="overlay-panel confirm-panel" id="confirm-form">
+        <header class="overlay-head">
+          <h2 id="confirm-title">Confirm check-in</h2>
+          <button class="icon-btn" type="button" data-close-confirm>Close</button>
+        </header>
+        <img id="confirm-image" alt="" hidden />
+        <label>
+          Student name
+          <input id="field-name" name="name" type="text" autocomplete="off" required />
+        </label>
+        <label>
+          Student ID
+          <input
+            id="field-id"
+            name="studentId"
+            type="text"
+            inputmode="numeric"
+            autocomplete="off"
+            required
+          />
+        </label>
+        <label>
+          Grade
+          <input id="field-grade" name="grade" type="text" inputmode="numeric" />
+        </label>
+        <p class="confirm-meta" id="confirm-meta"></p>
+        <p class="warn" id="duplicate-warn" hidden></p>
+        <div class="overlay-actions">
+          <button class="btn btn-primary" type="submit">Save check-in</button>
+          <button class="btn btn-ghost" type="button" data-retry-rotate hidden>
+            Rotate photo and retry
+          </button>
+          <button class="btn btn-ghost" type="button" data-close-confirm>Cancel</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="settings-dialog" class="overlay">
+      <form class="overlay-panel settings-panel" id="settings-form">
+        <header class="overlay-head">
+          <h2>Settings</h2>
+          <button class="icon-btn" type="button" data-close-settings>Close</button>
+        </header>
+        <label>
+          School name
+          <input id="setting-school" name="schoolName" type="text" />
+        </label>
+        <label>
+          School start time
+          <input id="setting-start" name="startTime" type="time" required />
+        </label>
+        <label>
+          Grace period (minutes)
+          <input
+            id="setting-grace"
+            name="graceMinutes"
+            type="number"
+            min="0"
+            max="60"
+          />
+        </label>
+        <p class="hint">
+          A student is marked tardy when they are scanned after start time plus
+          the grace period. Everything stays on this iPad or phone.
+        </p>
+        <div class="overlay-actions">
+          <button class="btn btn-primary" type="submit">Save settings</button>
+          <button class="btn btn-ghost" type="button" data-export-all-csv>
+            Export all days (CSV)
+          </button>
+          <button class="btn btn-ghost" type="button" data-export-all-xlsx>
+            Export all days (Excel)
+          </button>
+          <button class="btn btn-danger" type="button" data-clear-day>
+            Clear this day's check-ins
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <noscript>
+      <p class="noscript">This check-in tool needs JavaScript to scan IDs and save records.</p>
+    </noscript>
+
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="parse-card.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

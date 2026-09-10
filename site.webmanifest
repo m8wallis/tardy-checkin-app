@@ -1,0 +1,15 @@
+{
+  "name": "Kearny Tardy Check-In",
+  "short_name": "Check-In",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0c2d6b",
+  "theme_color": "#0c2d6b",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
