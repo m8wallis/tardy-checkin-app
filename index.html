@@ -249,13 +249,16 @@
             placeholder="attendance@school.org"
           />
         </label>
-        <p class="hint">
-          Email first saves the CSV to this device, then opens Mail with the
-          address and subject filled in. Use the paperclip in Mail and choose
-          that downloaded CSV (look in Downloads or the Files app).
+        <p class="hint" id="export-email-hint">
+          Email first asks you to save the CSV. After you tap Download, Mail
+          opens with the address and subject filled in. Attach that file with
+          the paperclip.
         </p>
         <div class="overlay-actions">
           <button class="btn btn-ghost" type="button" data-export-email>Email file</button>
+          <button class="btn btn-primary" type="button" data-export-open-mail hidden>
+            Open Mail
+          </button>
           <button class="btn btn-ghost" type="button" data-close-export>Cancel</button>
         </div>
       </div>

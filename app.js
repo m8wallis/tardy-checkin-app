@@ -24,6 +24,9 @@
   let lastImage = null
   let lastRotation = 0
   let pendingExport = null
+  let pendingMail = null
+  let waitingForDownloadFocus = false
+  let downloadStartedAt = 0
 
   const CLOSE_ICON = `
     <svg viewBox='0 0 24 24' aria-hidden='true'>
@@ -651,7 +654,43 @@
     document.getElementById('export-summary').textContent =
       records.length + ' check-in' + (records.length === 1 ? '' : 's') + ' · ' + filename
     document.getElementById('export-email').value = getSettings().exportEmail || ''
+    resetExportMailStep()
     openDialog(exportDialog)
+  }
+
+  function onMailBlur() {
+    waitingForDownloadFocus = true
+  }
+
+  function onMailFocus() {
+    if (!waitingForDownloadFocus || !pendingMail) return
+    if (Date.now() - downloadStartedAt < 500) return
+    openPendingMail()
+  }
+
+  function clearMailFocusListeners() {
+    window.removeEventListener('blur', onMailBlur)
+    window.removeEventListener('focus', onMailFocus)
+    waitingForDownloadFocus = false
+  }
+
+  function resetExportMailStep() {
+    pendingMail = null
+    downloadStartedAt = 0
+    clearMailFocusListeners()
+    const emailBtn = document.querySelector('[data-export-email]')
+    const openMailBtn = document.querySelector('[data-export-open-mail]')
+    if (emailBtn) emailBtn.hidden = false
+    if (openMailBtn) openMailBtn.hidden = true
+  }
+
+  function openPendingMail() {
+    if (!pendingMail) return
+    const mail = pendingMail
+    pendingMail = null
+    clearMailFocusListeners()
+    closeDialog(exportDialog)
+    window.location.href = mailtoHref(mail.email, mail.subject, mail.body)
   }
 
   function downloadPendingExport() {
@@ -680,10 +719,19 @@
       csvName +
       ' (it was just downloaded on this device).'
     downloadBlob(file.blob, csvName)
-    closeDialog(exportDialog)
-    window.setTimeout(function () {
-      window.location.href = mailtoHref(email, subject, body)
-    }, 700)
+    pendingMail = {
+      email: email,
+      subject: subject,
+      body: body
+    }
+    downloadStartedAt = Date.now()
+    waitingForDownloadFocus = false
+    document.querySelector('[data-export-email]').hidden = true
+    document.querySelector('[data-export-open-mail]').hidden = false
+    document.getElementById('export-summary').textContent =
+      'Tap Download on the save prompt. After the file is saved, tap Open Mail.'
+    window.addEventListener('blur', onMailBlur)
+    window.addEventListener('focus', onMailFocus)
   }
 
   function saveCheckIn(event) {
@@ -829,8 +877,10 @@
       alert('Could not start the email. Download the file instead.')
     }
   })
+  document.querySelector('[data-export-open-mail]').addEventListener('click', openPendingMail)
   document.querySelectorAll('[data-close-export]').forEach(function (button) {
     button.addEventListener('click', function () {
+      resetExportMailStep()
       closeDialog(exportDialog)
     })
   })
@@ -860,6 +910,7 @@
   })
 
   scannerDialog.addEventListener('close', stopCamera)
+  exportDialog.addEventListener('close', resetExportMailStep)
 
   document.getElementById('view-date').value = todayKey()
   fillSettingsForm()
