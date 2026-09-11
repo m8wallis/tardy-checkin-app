@@ -310,6 +310,11 @@ label input {
   color: var(--tardy);
 }
 
+.pill-excused {
+  background: #fff4b8;
+  color: #8a6a00;
+}
+
 .pill-ok {
   background: var(--ok-bg);
   color: var(--ok);

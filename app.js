@@ -159,14 +159,12 @@
       .map(function (record) {
         const when = new Date(record.scannedAt)
         const gradeLine = record.grade ? ' · Grade ' + escapeHtml(record.grade) : ''
-        const excuseLabel =
-          record.tardyExcuse === 'excused'
-            ? 'Excused'
-            : record.tardyExcuse === 'unexcused'
-              ? 'Unexcused'
-              : 'Tardy'
-        const pillClass = record.tardy ? 'pill-tardy' : 'pill-ok'
-        const pillLabel = record.tardy ? excuseLabel : 'On time'
+        const pillClass = !record.tardy
+          ? 'pill-ok'
+          : record.tardyExcuse === 'excused'
+            ? 'pill-excused'
+            : 'pill-tardy'
+        const pillLabel = record.tardy ? 'Tardy' : 'On time'
         const reasonLine = record.tardyReason ? ' · ' + escapeHtml(record.tardyReason) : ''
         return `
           <li class='record'>
@@ -543,11 +541,12 @@
         Time: formatTime(when),
         Timestamp: when.toISOString(),
         Tardy: record.tardy ? 'Yes' : 'No',
-        Excuse: record.tardyExcuse === 'excused'
-          ? 'Excused'
-          : record.tardyExcuse === 'unexcused'
-            ? 'Unexcused'
-            : '',
+        'Excused or Unexcused':
+          record.tardyExcuse === 'excused'
+            ? 'Excused'
+            : record.tardyExcuse === 'unexcused'
+              ? 'Unexcused'
+              : '',
         Reason: record.tardyReason || '',
         Source: record.source || 'scan'
       }
@@ -658,10 +657,11 @@
     saveExportEmail(email)
     document.getElementById('setting-export-email').value = email
 
-    const file = buildExport(pendingExport.records, pendingExport.filename, pendingExport.kind)
-    const attachment = new File([file.blob], file.filename, { type: file.mime })
+    const csvName = pendingExport.filename.replace(/\.xlsx$/i, '.csv')
+    const file = buildExport(pendingExport.records, csvName, 'csv')
+    const attachment = new File([file.blob], csvName, { type: 'text/csv' })
     const subject = 'Kearny tardy check-ins'
-    const shareText = 'Please send to ' + email
+    const body = 'The tardy check-in CSV is attached.'
     let shared = false
 
     if (navigator.canShare) {
@@ -670,7 +670,7 @@
           await navigator.share({
             files: [attachment],
             title: subject,
-            text: shareText
+            text: 'Please send this CSV to ' + email
           })
           shared = true
         }
@@ -684,15 +684,8 @@
       return
     }
 
-    downloadBlob(file.blob, file.filename)
+    downloadBlob(file.blob, csvName)
 
-    let body = 'Please attach ' + file.filename + ' (it was downloaded on this device).'
-    if (pendingExport.kind === 'csv') {
-      const table = csvText(pendingExport.records)
-      const candidate =
-        'Tardy check-in export is below. The same file was also downloaded.\n\n' + table
-      if (encodeURIComponent(candidate).length < 1600) body = candidate
-    }
     window.location.href =
       'mailto:' +
       encodeURIComponent(email) +
