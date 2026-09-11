@@ -25,8 +25,6 @@
   let lastRotation = 0
   let pendingExport = null
   let pendingMail = null
-  let waitingForDownloadFocus = false
-  let downloadStartedAt = 0
 
   const CLOSE_ICON = `
     <svg viewBox='0 0 24 24' aria-hidden='true'>
@@ -658,26 +656,8 @@
     openDialog(exportDialog)
   }
 
-  function onMailBlur() {
-    waitingForDownloadFocus = true
-  }
-
-  function onMailFocus() {
-    if (!waitingForDownloadFocus || !pendingMail) return
-    if (Date.now() - downloadStartedAt < 500) return
-    openPendingMail()
-  }
-
-  function clearMailFocusListeners() {
-    window.removeEventListener('blur', onMailBlur)
-    window.removeEventListener('focus', onMailFocus)
-    waitingForDownloadFocus = false
-  }
-
   function resetExportMailStep() {
     pendingMail = null
-    downloadStartedAt = 0
-    clearMailFocusListeners()
     const emailBtn = document.querySelector('[data-export-email]')
     const openMailBtn = document.querySelector('[data-export-open-mail]')
     if (emailBtn) emailBtn.hidden = false
@@ -688,7 +668,6 @@
     if (!pendingMail) return
     const mail = pendingMail
     pendingMail = null
-    clearMailFocusListeners()
     closeDialog(exportDialog)
     window.location.href = mailtoHref(mail.email, mail.subject, mail.body)
   }
@@ -724,14 +703,10 @@
       subject: subject,
       body: body
     }
-    downloadStartedAt = Date.now()
-    waitingForDownloadFocus = false
     document.querySelector('[data-export-email]').hidden = true
     document.querySelector('[data-export-open-mail]').hidden = false
     document.getElementById('export-summary').textContent =
-      'Tap Download on the save prompt. After the file is saved, tap Open Mail.'
-    window.addEventListener('blur', onMailBlur)
-    window.addEventListener('focus', onMailFocus)
+      'Tap Download on the save prompt. When that is done, tap Open Mail.'
   }
 
   function saveCheckIn(event) {
