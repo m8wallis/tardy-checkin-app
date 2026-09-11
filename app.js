@@ -554,14 +554,18 @@
   }
 
   function downloadBlob(blob, filename) {
-    const url = URL.createObjectURL(blob)
+    const file = new File([blob], filename, { type: blob.type || 'text/csv' })
+    const url = URL.createObjectURL(file)
     const link = document.createElement('a')
     link.href = url
     link.download = filename
+    link.rel = 'noopener'
     document.body.appendChild(link)
     link.click()
-    link.remove()
-    URL.revokeObjectURL(url)
+    window.setTimeout(function () {
+      link.remove()
+      URL.revokeObjectURL(url)
+    }, 4000)
   }
 
   function csvEscape(value) {
@@ -679,7 +683,7 @@
     closeDialog(exportDialog)
     window.setTimeout(function () {
       window.location.href = mailtoHref(email, subject, body)
-    }, 80)
+    }, 700)
   }
 
   function saveCheckIn(event) {
