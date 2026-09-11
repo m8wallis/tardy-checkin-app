@@ -619,6 +619,53 @@
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim())
   }
 
+  function mailtoHref(email, subject, body) {
+    return (
+      'mailto:' +
+      email +
+      '?subject=' +
+      encodeURIComponent(subject) +
+      '&body=' +
+      encodeURIComponent(body)
+    )
+  }
+
+  function encodeBase64Utf8(text) {
+    const bytes = new TextEncoder().encode(text)
+    let binary = ''
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i])
+    }
+    return btoa(binary).replace(/(.{76})/g, '$1\r\n')
+  }
+
+  function buildEmlFile(email, subject, body, csvName, csv) {
+    const boundary = '=_kearny_' + Date.now()
+    const eml = [
+      'To: ' + email,
+      'Subject: ' + subject,
+      'X-Unsent: 1',
+      'MIME-Version: 1.0',
+      'Content-Type: multipart/mixed; boundary="' + boundary + '"',
+      '',
+      '--' + boundary,
+      'Content-Type: text/plain; charset="utf-8"',
+      'Content-Transfer-Encoding: 7bit',
+      '',
+      body,
+      '',
+      '--' + boundary,
+      'Content-Type: text/csv; charset="utf-8"; name="' + csvName + '"',
+      'Content-Transfer-Encoding: base64',
+      'Content-Disposition: attachment; filename="' + csvName + '"',
+      '',
+      encodeBase64Utf8(csv),
+      '--' + boundary + '--',
+      ''
+    ].join('\r\n')
+    return new File([eml], 'Kearny tardy check-ins.eml', { type: 'message/rfc822' })
+  }
+
   function saveExportEmail(email) {
     const settings = getSettings()
     settings.exportEmail = email
@@ -659,24 +706,40 @@
 
     const csvName = pendingExport.filename.replace(/\.xlsx$/i, '.csv')
     const file = buildExport(pendingExport.records, csvName, 'csv')
-    const attachment = new File([file.blob], csvName, { type: 'text/csv' })
+    const csvAttachment = new File([file.blob], csvName, { type: 'text/csv' })
     const subject = 'Kearny tardy check-ins'
     const body = 'The tardy check-in CSV is attached.'
+    const mailLink = mailtoHref(email, subject, body)
+    const emlFile = buildEmlFile(email, subject, body, csvName, csvText(pendingExport.records))
     let shared = false
 
-    if (navigator.canShare) {
-      try {
-        if (navigator.canShare({ files: [attachment] })) {
-          await navigator.share({
-            files: [attachment],
-            title: subject,
-            text: 'Please send this CSV to ' + email
-          })
-          shared = true
-        }
-      } catch (err) {
-        if (err.name !== 'AbortError') console.error(err)
-      }
+    async function tryShare(data) {
+      if (!navigator.share || !navigator.canShare || !navigator.canShare(data)) return false
+      await navigator.share(data)
+      return true
+    }
+
+    try {
+      shared =
+        (await tryShare({
+          title: subject,
+          text: body,
+          files: [emlFile]
+        })) ||
+        (await tryShare({
+          title: subject,
+          text: body,
+          url: mailLink,
+          files: [csvAttachment]
+        })) ||
+        (await tryShare({
+          title: subject,
+          text: body,
+          files: [csvAttachment]
+        }))
+    } catch (err) {
+      if (err.name === 'AbortError') return
+      console.error(err)
     }
 
     if (shared) {
@@ -685,14 +748,7 @@
     }
 
     downloadBlob(file.blob, csvName)
-
-    window.location.href =
-      'mailto:' +
-      encodeURIComponent(email) +
-      '?subject=' +
-      encodeURIComponent(subject) +
-      '&body=' +
-      encodeURIComponent(body)
+    window.location.href = mailLink
     closeDialog(exportDialog)
   }
 
