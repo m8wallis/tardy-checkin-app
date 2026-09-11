@@ -1,0 +1,26 @@
+---
+description: Award class points from chat or pasted JSON by editing points.js
+alwaysApply: true
+---
+
+# Student points
+
+When the user asks to add, subtract, or redeem points — including a pasted JSON list — append awards to `points.js`. Do not put points in `data.js`. Do not reformat existing awards.
+
+## How
+
+- Resolve students by `displayName` (e.g. `Danyela C.`) or id (`s01`). First name only is fine if unique.
+- Append to `window.CSD_POINTS.awards`. Never reuse an `id`.
+- `delta` is the change: `5` adds, `-5` subtracts.
+- Give each award a unique `id` like `2026-08-20-quiz-danyela`.
+- Add a short `note` when the user gives a reason.
+
+```javascript
+{ id: '2026-08-20-quiz-danyela', name: 'Danyela C.', delta: 5, note: 'Quiz' }
+```
+
+## Pasted JSON
+
+Object of names to amounts, or an array of `{ name, delta, note }`. Convert each entry into an award and append. Skip names that do not match a student, and tell the user who was skipped.
+
+After editing, tell the user to refresh the site.

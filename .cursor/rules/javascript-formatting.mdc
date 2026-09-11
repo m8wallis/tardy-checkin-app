@@ -1,0 +1,47 @@
+---
+description: JavaScript formatting — single quotes, no semicolons
+globs: "**/*.js"
+alwaysApply: false
+---
+
+# JavaScript formatting
+
+Hand-written JS (`app.js` and any new `.js` files) follows this style. Do not reformat `data.js` — it is generated JSON from `generate_data.py` and must keep double quotes.
+
+## Quotes
+
+- Use single quotes for JS strings.
+- Use single quotes for HTML attributes inside template literals.
+- Keep a double quote only when it is the character being matched, e.g. `.replaceAll('"', '&quot;')`.
+
+```javascript
+// ❌ BAD
+const id = "all"
+el.className = "chip"
+html = `<div class="bar">${label}</div>`
+
+// ✅ GOOD
+const id = 'all'
+el.className = 'chip'
+html = `<div class='bar'>${label}</div>`
+```
+
+## Semicolons and commas
+
+- Do not use statement-ending semicolons (rely on ASI).
+- Do not use trailing commas in arrays or objects.
+
+```javascript
+// ❌ BAD
+const state = { filter: 'all', query: '', };
+renderCards();
+
+// ✅ GOOD
+const state = { filter: 'all', query: '' }
+renderCards()
+```
+
+## Other
+
+- 2-space indent.
+- Keep `function` declarations (do not convert existing functions to arrow functions unless asked).

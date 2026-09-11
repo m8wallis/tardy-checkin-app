@@ -12,7 +12,8 @@
       content="Scan Kearny High School ID cards to log tardy check-ins and export the list."
     />
     <title>Kearny Check-In</title>
-    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="kearny-logo.webp" type="image/webp" />
+    <link rel="apple-touch-icon" href="kearny-logo.webp" />
     <link rel="manifest" href="site.webmanifest" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -26,7 +27,13 @@
     <div class="app">
       <header class="topbar">
         <div class="brand">
-          <span class="brand-mark" aria-hidden="true">K</span>
+          <img
+            class="brand-mark"
+            src="kearny-logo.webp"
+            alt="Kearny High School"
+            width="104"
+            height="64"
+          />
           <div>
             <p class="brand-kicker" id="school-name">Kearny High School</p>
             <h1>Tardy Check-In</h1>
@@ -193,6 +200,16 @@
             max="60"
           />
         </label>
+        <label>
+          Email exports to
+          <input
+            id="setting-export-email"
+            name="exportEmail"
+            type="email"
+            autocomplete="email"
+            placeholder="attendance@school.org"
+          />
+        </label>
         <p class="hint">
           A student is marked tardy when they are scanned after start time plus
           the grace period. Everything stays on this iPad or phone.
@@ -212,6 +229,35 @@
       </form>
     </dialog>
 
+    <dialog id="export-dialog" class="overlay">
+      <div class="overlay-panel export-panel">
+        <header class="overlay-head">
+          <h2 id="export-title">Export check-ins</h2>
+          <button class="icon-btn" type="button" data-close-export>Close</button>
+        </header>
+        <p class="hint" id="export-summary"></p>
+        <button class="btn btn-primary" type="button" data-export-download>
+          Download file
+        </button>
+        <label>
+          Email to
+          <input
+            id="export-email"
+            type="email"
+            autocomplete="email"
+            placeholder="attendance@school.org"
+          />
+        </label>
+        <p class="hint">
+          Email opens Mail to this address. The file is also saved on this device
+          so you can attach it if Mail does not include it automatically.
+        </p>
+        <div class="overlay-actions">
+          <button class="btn btn-ghost" type="button" data-export-email>Email file</button>
+          <button class="btn btn-ghost" type="button" data-close-export>Cancel</button>
+        </div>
+      </div>
+    </dialog>
     <noscript>
       <p class="noscript">This check-in tool needs JavaScript to scan IDs and save records.</p>
     </noscript>

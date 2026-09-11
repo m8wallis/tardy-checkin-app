@@ -68,15 +68,10 @@ body {
 }
 
 .brand-mark {
-  display: grid;
-  place-items: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  background: var(--navy);
-  color: white;
-  font-weight: 700;
-  font-size: 1.35rem;
+  display: block;
+  width: 104px;
+  height: 64px;
+  object-fit: contain;
 }
 
 .brand-kicker,
@@ -260,7 +255,7 @@ label input {
 
 .record {
   display: grid;
-  grid-template-columns: 88px 1fr auto;
+  grid-template-columns: 88px 1fr auto auto;
   gap: 10px;
   align-items: center;
   padding: 12px;
@@ -304,14 +299,29 @@ label input {
 }
 
 .record-delete {
-  grid-column: 3;
-  grid-row: 1 / span 2;
-  min-height: 36px;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0;
   border: 0;
+  border-radius: 999px;
   background: transparent;
   color: var(--muted);
-  font: inherit;
   cursor: pointer;
+}
+
+.record-delete svg {
+  display: block;
+  width: 22px;
+  height: 22px;
+}
+
+.record-delete:hover,
+.record-delete:focus-visible {
+  color: var(--danger);
+  background: #fff1f2;
 }
 
 .empty {
@@ -344,7 +354,8 @@ label input {
 .scanner-panel,
 .process-panel,
 .confirm-panel,
-.settings-panel {
+.settings-panel,
+.export-panel {
   display: grid;
   gap: 12px;
 }
@@ -439,7 +450,7 @@ label {
   }
 
   .record {
-    grid-template-columns: 76px 1fr auto;
+    grid-template-columns: 76px 1fr auto auto;
   }
 
   .status-card {

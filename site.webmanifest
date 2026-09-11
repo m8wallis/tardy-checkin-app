@@ -7,9 +7,9 @@
   "theme_color": "#0c2d6b",
   "icons": [
     {
-      "src": "favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml"
+      "src": "kearny-logo.webp",
+      "sizes": "512x512",
+      "type": "image/webp"
     }
   ]
 }
