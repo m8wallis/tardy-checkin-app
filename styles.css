@@ -69,7 +69,7 @@ body {
 
 .brand-mark {
   display: block;
-  width: 104px;
+  width: 64px;
   height: 64px;
   object-fit: contain;
 }
@@ -104,8 +104,7 @@ body {
   gap: 16px;
   align-items: flex-end;
   padding: 20px 22px;
-  background:
-    linear-gradient(180deg, #14367a, var(--navy));
+  background: linear-gradient(180deg, #14367a, var(--navy));
   color: #eef3ff;
   border-color: transparent;
 }
@@ -210,6 +209,20 @@ body {
   border-radius: 12px;
 }
 
+[data-open-settings] {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  min-width: 42px;
+  padding: 0;
+}
+
+[data-open-settings] svg {
+  display: block;
+  width: 22px;
+  height: 22px;
+}
+
 .actions .btn-primary {
   grid-column: 1 / -1;
 }
@@ -256,8 +269,9 @@ label input {
 .record {
   display: grid;
   grid-template-columns: 88px 1fr auto auto;
-  gap: 10px;
-  align-items: center;
+  gap: 0.75rem;
+  /* align-items: center; */
+  align-items: flex-start;
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: 16px;
@@ -265,6 +279,7 @@ label input {
 }
 
 .record time {
+  font-size: 0.875rem;
   font-weight: 700;
   color: var(--navy);
 }
@@ -276,16 +291,18 @@ label input {
 .record .meta {
   color: var(--muted);
   font-size: 0.88rem;
+  margin-bottom: 0;
 }
 
 .pill {
   display: inline-block;
-  padding: 6px 10px;
+  padding: 5px 8px;
   border-radius: 999px;
-  font-size: 0.78rem;
+  font-size: 0.7rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+  margin-top: 0.675rem;
 }
 
 .pill-tardy {
@@ -418,6 +435,48 @@ label {
   font-weight: 600;
 }
 
+.tardy-details {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #fffaf2;
+}
+
+.tardy-details[hidden],
+#tardy-reason-wrap[hidden] {
+  display: none;
+}
+
+.tardy-details legend {
+  padding: 0 6px;
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.choice-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: white;
+  font-weight: 600;
+}
+
+.choice input {
+  width: auto;
+  min-height: 0;
+}
+
 .warn {
   padding: 10px 12px;
   border-radius: 12px;
@@ -450,7 +509,7 @@ label {
   }
 
   .record {
-    grid-template-columns: 76px 1fr auto auto;
+    grid-template-columns: 72px 1fr auto;
   }
 
   .status-card {

@@ -2,10 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#0c2d6b" />
     <meta
       name="description"
@@ -31,7 +28,7 @@
             class="brand-mark"
             src="kearny-logo.webp"
             alt="Kearny High School"
-            width="104"
+            width="64"
             height="64"
           />
           <div>
@@ -40,7 +37,24 @@
           </div>
         </div>
         <button class="icon-btn" type="button" data-open-settings aria-label="Settings">
-          Settings
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle
+              cx="12"
+              cy="12"
+              r="3"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            ></circle>
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09A1.65 1.65 0 0 0 19.4 15z"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ></path>
+          </svg>
         </button>
       </header>
 
@@ -48,32 +62,20 @@
         <div>
           <p class="eyebrow" id="today-label">Today</p>
           <p class="clock" id="live-clock">--:--</p>
-          <p class="start-line">
-            School starts at <strong id="start-time-label">8:45 AM</strong>
-          </p>
+          <p class="start-line">School starts at <strong id="start-time-label">8:45 AM</strong></p>
         </div>
         <p class="tardy-flag" id="now-tardy-flag">On time window</p>
       </section>
 
       <section class="actions">
-        <button class="btn btn-primary" type="button" data-open-scanner>
-          Scan student ID
-        </button>
+        <button class="btn btn-primary" type="button" data-open-scanner>Scan student ID</button>
         <div class="action-row">
           <button class="btn btn-ghost" type="button" data-upload-photo>
             Upload or take photo
           </button>
-          <button class="btn btn-ghost" type="button" data-manual-entry>
-            Type it in
-          </button>
+          <button class="btn btn-ghost" type="button" data-manual-entry>Type it in</button>
         </div>
-        <input
-          id="photo-input"
-          type="file"
-          accept="image/*"
-          capture="environment"
-          hidden
-        />
+        <input id="photo-input" type="file" accept="image/*" capture="environment" hidden />
       </section>
 
       <section class="log">
@@ -88,12 +90,8 @@
           </label>
         </div>
         <div class="export-row">
-          <button class="btn btn-small" type="button" data-export-csv>
-            Export CSV
-          </button>
-          <button class="btn btn-small" type="button" data-export-xlsx>
-            Export Excel
-          </button>
+          <button class="btn btn-small" type="button" data-export-csv>Export CSV</button>
+          <button class="btn btn-small" type="button" data-export-xlsx>Export Excel</button>
         </div>
         <ul class="record-list" id="record-list"></ul>
         <p class="empty" id="empty-state">
@@ -108,21 +106,15 @@
           <h2>Scan ID card</h2>
           <button class="icon-btn" type="button" data-close-scanner>Close</button>
         </header>
-        <p class="hint">
-          Fill the frame with the whole badge — name, ID number, and barcode.
-        </p>
+        <p class="hint">Fill the frame with the whole badge — name, ID number, and barcode.</p>
         <div class="viewfinder">
           <video id="camera" autoplay playsinline webkit-playsinline muted></video>
           <div class="guide" aria-hidden="true"></div>
         </div>
         <p class="camera-error" id="camera-error" hidden></p>
         <div class="overlay-actions">
-          <button class="btn btn-primary" type="button" data-capture>
-            Capture card
-          </button>
-          <button class="btn btn-ghost" type="button" data-close-scanner>
-            Cancel
-          </button>
+          <button class="btn btn-primary" type="button" data-capture>Capture card</button>
+          <button class="btn btn-ghost" type="button" data-close-scanner>Cancel</button>
         </div>
       </div>
     </dialog>
@@ -165,6 +157,23 @@
           <input id="field-grade" name="grade" type="text" inputmode="numeric" />
         </label>
         <p class="confirm-meta" id="confirm-meta"></p>
+        <fieldset id="tardy-details" class="tardy-details" hidden>
+          <legend>Tardy type</legend>
+          <div class="choice-row">
+            <label class="choice">
+              <input type="radio" name="tardyExcuse" value="excused" />
+              Excused
+            </label>
+            <label class="choice">
+              <input type="radio" name="tardyExcuse" value="unexcused" />
+              Unexcused
+            </label>
+          </div>
+          <label id="tardy-reason-wrap" hidden>
+            Reason
+            <input id="field-tardy-reason" name="tardyReason" type="text" autocomplete="off" />
+          </label>
+        </fieldset>
         <p class="warn" id="duplicate-warn" hidden></p>
         <div class="overlay-actions">
           <button class="btn btn-primary" type="submit">Save check-in</button>
@@ -192,13 +201,7 @@
         </label>
         <label>
           Grace period (minutes)
-          <input
-            id="setting-grace"
-            name="graceMinutes"
-            type="number"
-            min="0"
-            max="60"
-          />
+          <input id="setting-grace" name="graceMinutes" type="number" min="0" max="60" />
         </label>
         <label>
           Email exports to
@@ -211,8 +214,8 @@
           />
         </label>
         <p class="hint">
-          A student is marked tardy when they are scanned after start time plus
-          the grace period. Everything stays on this iPad or phone.
+          A student is marked tardy when they are scanned after start time plus the grace period.
+          Everything stays on this iPad or phone.
         </p>
         <div class="overlay-actions">
           <button class="btn btn-primary" type="submit">Save settings</button>
@@ -236,9 +239,7 @@
           <button class="icon-btn" type="button" data-close-export>Close</button>
         </header>
         <p class="hint" id="export-summary"></p>
-        <button class="btn btn-primary" type="button" data-export-download>
-          Download file
-        </button>
+        <button class="btn btn-primary" type="button" data-export-download>Download file</button>
         <label>
           Email to
           <input
@@ -249,8 +250,8 @@
           />
         </label>
         <p class="hint">
-          Email opens Mail to this address. The file is also saved on this device
-          so you can attach it if Mail does not include it automatically.
+          Email opens Mail to this address. The file is also saved on this device so you can attach
+          it if Mail does not include it automatically.
         </p>
         <div class="overlay-actions">
           <button class="btn btn-ghost" type="button" data-export-email>Email file</button>

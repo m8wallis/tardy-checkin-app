@@ -159,16 +159,25 @@
       .map(function (record) {
         const when = new Date(record.scannedAt)
         const gradeLine = record.grade ? ' · Grade ' + escapeHtml(record.grade) : ''
+        const excuseLabel =
+          record.tardyExcuse === 'excused'
+            ? 'Excused'
+            : record.tardyExcuse === 'unexcused'
+              ? 'Unexcused'
+              : 'Tardy'
         const pillClass = record.tardy ? 'pill-tardy' : 'pill-ok'
-        const pillLabel = record.tardy ? 'Tardy' : 'On time'
+        const pillLabel = record.tardy ? excuseLabel : 'On time'
+        const reasonLine = record.tardyReason ? ' · ' + escapeHtml(record.tardyReason) : ''
         return `
           <li class='record'>
-            <time>${escapeHtml(formatTime(when))}</time>
+            <div>
+              <time>${escapeHtml(formatTime(when))}</time>
+              <span class='pill ${pillClass}'>${pillLabel}</span>
+            </div>
             <div>
               <strong>${escapeHtml(record.name)}</strong>
-              <p class='meta'>${escapeHtml(record.studentId)}${gradeLine}</p>
-            </div>
-            <span class='pill ${pillClass}'>${pillLabel}</span>
+              <p class='meta'>${escapeHtml(record.studentId)}${gradeLine}${reasonLine}</p>
+            </div>            
             <button
               class='record-delete'
               type='button'
@@ -403,6 +412,26 @@
     confirmImage.hidden = false
   }
 
+  function selectedExcuse() {
+    const picked = document.querySelector('input[name="tardyExcuse"]:checked')
+    return picked ? picked.value : ''
+  }
+
+  function syncTardyFields(tardy) {
+    const details = document.getElementById('tardy-details')
+    const reasonWrap = document.getElementById('tardy-reason-wrap')
+    const reason = document.getElementById('field-tardy-reason')
+    const radios = document.querySelectorAll('input[name="tardyExcuse"]')
+    details.hidden = !tardy
+    radios.forEach(function (radio) {
+      radio.required = tardy
+    })
+    const unexcused = tardy && selectedExcuse() === 'unexcused'
+    reasonWrap.hidden = !unexcused
+    reason.required = unexcused
+    if (!unexcused) reason.value = ''
+  }
+
   function openConfirm(values, fromScan) {
     const settings = getSettings()
     const now = new Date()
@@ -413,6 +442,11 @@
     document.getElementById('field-name').value = values.name || ''
     document.getElementById('field-id').value = values.studentId || ''
     document.getElementById('field-grade').value = values.grade || ''
+    document.getElementById('field-tardy-reason').value = ''
+    document.querySelectorAll('input[name="tardyExcuse"]').forEach(function (radio) {
+      radio.checked = false
+    })
+    syncTardyFields(tardy)
     document.getElementById('confirm-meta').textContent =
       formatTime(now) + ' · ' + (tardy ? 'Will be marked tardy' : 'Will be marked on time')
     document.querySelector('[data-retry-rotate]').hidden = !fromScan
@@ -509,6 +543,12 @@
         Time: formatTime(when),
         Timestamp: when.toISOString(),
         Tardy: record.tardy ? 'Yes' : 'No',
+        Excuse: record.tardyExcuse === 'excused'
+          ? 'Excused'
+          : record.tardyExcuse === 'unexcused'
+            ? 'Unexcused'
+            : '',
+        Reason: record.tardyReason || '',
         Source: record.source || 'scan'
       }
     })
@@ -595,11 +635,7 @@
     document.getElementById('export-title').textContent =
       kind === 'xlsx' ? 'Export Excel' : 'Export CSV'
     document.getElementById('export-summary').textContent =
-      records.length +
-      ' check-in' +
-      (records.length === 1 ? '' : 's') +
-      ' · ' +
-      filename
+      records.length + ' check-in' + (records.length === 1 ? '' : 's') + ' · ' + filename
     document.getElementById('export-email').value = getSettings().exportEmail || ''
     openDialog(exportDialog)
   }
@@ -671,13 +707,23 @@
     event.preventDefault()
     const settings = getSettings()
     const now = new Date()
+    const tardy = isTardyAt(now, settings)
+    const tardyExcuse = tardy ? selectedExcuse() : ''
+    const tardyReason =
+      tardy && tardyExcuse === 'unexcused'
+        ? document.getElementById('field-tardy-reason').value.trim()
+        : ''
+    if (tardy && !tardyExcuse) return
+    if (tardyExcuse === 'unexcused' && !tardyReason) return
     const record = {
       id: 'ck_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
       name: window.parseIdCard.toDisplayName(document.getElementById('field-name').value),
       studentId: document.getElementById('field-id').value.replace(/\s+/g, ''),
       grade: document.getElementById('field-grade').value.trim(),
       scannedAt: now.toISOString(),
-      tardy: isTardyAt(now, settings),
+      tardy: tardy,
+      tardyExcuse: tardyExcuse,
+      tardyReason: tardyReason,
       source: document.getElementById('confirm-image').hidden ? 'manual' : 'scan'
     }
     if (!record.name || !record.studentId) return
@@ -741,6 +787,12 @@
   })
 
   document.getElementById('confirm-form').addEventListener('submit', saveCheckIn)
+
+  document.querySelectorAll('input[name="tardyExcuse"]').forEach(function (radio) {
+    radio.addEventListener('change', function () {
+      syncTardyFields(true)
+    })
+  })
 
   document.querySelector('[data-open-settings]').addEventListener('click', function () {
     fillSettingsForm()
