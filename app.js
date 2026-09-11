@@ -202,15 +202,32 @@
     var error = document.getElementById('camera-error')
     error.hidden = true
     try {
-      cameraStream = await navigator.mediaDevices.getUserMedia({
-        audio: false,
-        video: {
-          facingMode: { ideal: 'environment' },
-          width: { ideal: 1920 },
-          height: { ideal: 1080 }
-        }
-      })
+      try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: {
+            facingMode: { ideal: 'environment' },
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          }
+        })
+      } catch (inner) {
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: { facingMode: 'environment' }
+        })
+      }
       video.srcObject = cameraStream
+      if (video.readyState < 2) {
+        await new Promise(function (resolve, reject) {
+          video.onloadedmetadata = function () {
+            resolve()
+          }
+          video.onerror = function () {
+            reject(new Error('Camera preview failed'))
+          }
+        })
+      }
       await video.play()
     } catch (err) {
       error.hidden = false
@@ -232,9 +249,30 @@
     document.getElementById('progress-bar').style.width = Math.max(8, percent) + '%'
   }
 
+  function snapshotFromVideo(videoEl) {
+    var width = videoEl.videoWidth
+    var height = videoEl.videoHeight
+    if (!width || !height) {
+      throw new Error('Camera frame is empty')
+    }
+    var canvas = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
+    canvas.getContext('2d').drawImage(videoEl, 0, 0, width, height)
+    return canvas
+  }
+
+  function freezeSource(source) {
+    if (source && source.tagName === 'VIDEO') return snapshotFromVideo(source)
+    return source
+  }
+
   function drawSourceToCanvas(source, rotation) {
     var width = source.naturalWidth || source.videoWidth || source.width
     var height = source.naturalHeight || source.videoHeight || source.height
+    if (!width || !height) {
+      throw new Error('Captured image has no pixels')
+    }
     var turns = ((rotation % 360) + 360) % 360
     var swapped = turns === 90 || turns === 270
     var outW = swapped ? height : width
@@ -264,18 +302,18 @@
   function cropCanvas(source, yStart, yEnd) {
     var canvas = document.createElement('canvas')
     var sy = Math.round(source.height * yStart)
-    var sh = Math.round(source.height * (yEnd - yStart))
-    canvas.width = source.width
+    var sh = Math.max(1, Math.round(source.height * (yEnd - yStart)))
+    canvas.width = Math.max(1, source.width)
     canvas.height = sh
-    canvas.getContext('2d').drawImage(source, 0, sy, source.width, sh, 0, 0, source.width, sh)
+    canvas.getContext('2d').drawImage(source, 0, sy, source.width, sh, 0, 0, canvas.width, sh)
     return canvas
   }
 
   function contrastCanvas(source) {
     var canvas = document.createElement('canvas')
-    canvas.width = source.width
-    canvas.height = source.height
-    var ctx = canvas.getContext('2d')
+    canvas.width = Math.max(1, source.width)
+    canvas.height = Math.max(1, source.height)
+    var ctx = canvas.getContext('2d', { willReadFrequently: true })
     ctx.drawImage(source, 0, 0)
     var image = ctx.getImageData(0, 0, canvas.width, canvas.height)
     var data = image.data
@@ -305,7 +343,7 @@
           ZXing.BarcodeFormat.UPC_A
         ])
         var reader = new ZXing.BrowserMultiFormatReader(hints)
-        var url = canvas.toDataURL('image/png')
+        var url = canvas.toDataURL('image/jpeg', 0.92)
         reader
           .decodeFromImageUrl(url)
           .then(function (result) {
@@ -390,14 +428,15 @@
   }
 
   async function processImage(source, rotation) {
-    lastImage = source
+    var frozen = freezeSource(source)
+    lastImage = frozen
     lastRotation = rotation || 0
     closeDialog(scannerDialog)
     stopCamera()
     openDialog(processDialog)
     setProcessStatus('Preparing the photo…', 12)
 
-    var full = drawSourceToCanvas(source, lastRotation)
+    var full = drawSourceToCanvas(frozen, lastRotation)
     showPreview(full)
     var textBand = contrastCanvas(cropCanvas(full, 0.55, 0.92))
     var barcodeBand = cropCanvas(full, 0.78, 1)
@@ -431,13 +470,16 @@
   }
 
   async function handleCapture() {
-    if (!video.videoWidth) {
+    if (!video.videoWidth || video.readyState < 2) {
       document.getElementById('camera-error').hidden = false
       document.getElementById('camera-error').textContent =
         'The camera is still starting. Try again in a moment.'
       return
     }
-    await processImage(video, 0)
+    var frame = snapshotFromVideo(video)
+    closeDialog(scannerDialog)
+    stopCamera()
+    await processImage(frame, 0)
   }
 
   function loadFile(file) {
