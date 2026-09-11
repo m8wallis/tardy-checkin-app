@@ -630,42 +630,6 @@
     )
   }
 
-  function encodeBase64Utf8(text) {
-    const bytes = new TextEncoder().encode(text)
-    let binary = ''
-    for (let i = 0; i < bytes.length; i++) {
-      binary += String.fromCharCode(bytes[i])
-    }
-    return btoa(binary).replace(/(.{76})/g, '$1\r\n')
-  }
-
-  function buildEmlFile(email, subject, body, csvName, csv) {
-    const boundary = '=_kearny_' + Date.now()
-    const eml = [
-      'To: ' + email,
-      'Subject: ' + subject,
-      'X-Unsent: 1',
-      'MIME-Version: 1.0',
-      'Content-Type: multipart/mixed; boundary="' + boundary + '"',
-      '',
-      '--' + boundary,
-      'Content-Type: text/plain; charset="utf-8"',
-      'Content-Transfer-Encoding: 7bit',
-      '',
-      body,
-      '',
-      '--' + boundary,
-      'Content-Type: text/csv; charset="utf-8"; name="' + csvName + '"',
-      'Content-Transfer-Encoding: base64',
-      'Content-Disposition: attachment; filename="' + csvName + '"',
-      '',
-      encodeBase64Utf8(csv),
-      '--' + boundary + '--',
-      ''
-    ].join('\r\n')
-    return new File([eml], 'Kearny tardy check-ins.eml', { type: 'message/rfc822' })
-  }
-
   function saveExportEmail(email) {
     const settings = getSettings()
     settings.exportEmail = email
@@ -693,7 +657,7 @@
     closeDialog(exportDialog)
   }
 
-  async function emailPendingExport() {
+  function emailPendingExport() {
     if (!pendingExport) return
     const email = document.getElementById('export-email').value.trim()
     if (!isValidEmail(email)) {
@@ -706,50 +670,16 @@
 
     const csvName = pendingExport.filename.replace(/\.xlsx$/i, '.csv')
     const file = buildExport(pendingExport.records, csvName, 'csv')
-    const csvAttachment = new File([file.blob], csvName, { type: 'text/csv' })
     const subject = 'Kearny tardy check-ins'
-    const body = 'The tardy check-in CSV is attached.'
-    const mailLink = mailtoHref(email, subject, body)
-    const emlFile = buildEmlFile(email, subject, body, csvName, csvText(pendingExport.records))
-    let shared = false
-
-    async function tryShare(data) {
-      if (!navigator.share || !navigator.canShare || !navigator.canShare(data)) return false
-      await navigator.share(data)
-      return true
-    }
-
-    try {
-      shared =
-        (await tryShare({
-          title: subject,
-          text: body,
-          files: [emlFile]
-        })) ||
-        (await tryShare({
-          title: subject,
-          text: body,
-          url: mailLink,
-          files: [csvAttachment]
-        })) ||
-        (await tryShare({
-          title: subject,
-          text: body,
-          files: [csvAttachment]
-        }))
-    } catch (err) {
-      if (err.name === 'AbortError') return
-      console.error(err)
-    }
-
-    if (shared) {
-      closeDialog(exportDialog)
-      return
-    }
-
+    const body =
+      'Please attach ' +
+      csvName +
+      ' (it was just downloaded on this device).'
     downloadBlob(file.blob, csvName)
-    window.location.href = mailLink
     closeDialog(exportDialog)
+    window.setTimeout(function () {
+      window.location.href = mailtoHref(email, subject, body)
+    }, 80)
   }
 
   function saveCheckIn(event) {
@@ -888,10 +818,12 @@
 
   document.querySelector('[data-export-download]').addEventListener('click', downloadPendingExport)
   document.querySelector('[data-export-email]').addEventListener('click', function () {
-    emailPendingExport().catch(function (err) {
+    try {
+      emailPendingExport()
+    } catch (err) {
       console.error(err)
       alert('Could not start the email. Download the file instead.')
-    })
+    }
   })
   document.querySelectorAll('[data-close-export]').forEach(function (button) {
     button.addEventListener('click', function () {
