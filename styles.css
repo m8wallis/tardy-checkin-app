@@ -250,13 +250,48 @@ body {
 .date-field input,
 label input,
 label select {
+  display: block;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   min-height: 48px;
   border-radius: 12px;
   border: 1px solid var(--line);
   padding: 0 12px;
   font: inherit;
-  background: white;
+  color: inherit;
+  background-color: #fff;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+label select {
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235b6b82' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+}
+
+label input[type='time'] {
+  display: inline-flex;
+  align-items: center;
+  -webkit-min-logical-width: 100%;
+}
+
+label input[type='time']::-webkit-datetime-edit,
+label input[type='time']::-webkit-datetime-edit-fields-wrapper,
+label input[type='time']::-webkit-datetime-edit-text,
+label input[type='time']::-webkit-datetime-edit-hour-field,
+label input[type='time']::-webkit-datetime-edit-minute-field,
+label input[type='time']::-webkit-datetime-edit-meridiem-field,
+label input[type='time']::-webkit-date-and-time-value {
+  padding: 0;
+  min-width: 0;
+}
+
+label input[type='time']::-webkit-date-and-time-value {
+  text-align: left;
 }
 
 .date-field input {
@@ -375,7 +410,7 @@ label select {
 
 .overlay-panel {
   max-height: min(92dvh, 900px);
-  max-width: min(91.5dvw, 560px);
+  max-width: 100%;
   overflow: auto;
 }
 
@@ -442,6 +477,7 @@ label select {
 label {
   display: grid;
   gap: 6px;
+  min-width: 0;
   font-size: 0.92rem;
   font-weight: 600;
 }
