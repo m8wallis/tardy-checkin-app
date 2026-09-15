@@ -163,7 +163,7 @@ body {
 .overlay-actions {
   margin-top: 8px;
 
-  button[type="submit"] {
+  button[type='submit'] {
     grid-column: span 2;
   }
 }
@@ -389,7 +389,7 @@ label select {
 }
 
 .viewfinder {
-  position: relative;d
+  position: relative;
   overflow: hidden;
   border-radius: 18px;
   background: #0b1020;
