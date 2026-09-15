@@ -192,8 +192,14 @@
           <button class="icon-btn" type="button" data-close-settings>Close</button>
         </header>
         <label>
-          School name
-          <input id="setting-school" name="schoolName" type="text" />
+          School
+          <select id="setting-school" name="schoolName">
+            <option value="Kearny High School">Kearny High School</option>
+            <option value="BST">BST</option>
+            <option value="SCC">SCC</option>
+            <option value="DMD">DMD</option>
+            <option value="EID">EID</option>
+          </select>
         </label>
         <label>
           School start time
@@ -214,8 +220,9 @@
           />
         </label>
         <p class="hint">
-          A student is marked tardy when they are scanned after start time plus the grace period.
-          Everything stays on this iPad or phone.
+          Choose which Kearny school this iPad is checking in. That school is
+          saved on every scan. A student is marked tardy after start time plus
+          the grace period. Everything stays on this device.
         </p>
         <div class="overlay-actions">
           <button class="btn btn-primary" type="submit">Save settings</button>

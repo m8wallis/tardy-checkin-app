@@ -12,6 +12,8 @@
     exportEmail: ''
   }
 
+  const SCHOOLS = ['Kearny High School', 'BST', 'SCC', 'DMD', 'EID']
+
   const video = document.getElementById('camera')
   const photoInput = document.getElementById('photo-input')
   const scannerDialog = document.getElementById('scanner-dialog')
@@ -166,6 +168,7 @@
             ? 'pill-excused'
             : 'pill-tardy'
         const pillLabel = record.tardy ? 'Tardy' : 'On time'
+        const schoolLine = record.school ? ' · ' + escapeHtml(record.school) : ''
         const reasonLine = record.tardyReason ? ' · ' + escapeHtml(record.tardyReason) : ''
         return `
           <li class='record'>
@@ -175,7 +178,7 @@
             </div>
             <div>
               <strong>${escapeHtml(record.name)}</strong>
-              <p class='meta'>${escapeHtml(record.studentId)}${gradeLine}${reasonLine}</p>
+              <p class='meta'>${escapeHtml(record.studentId)}${gradeLine}${schoolLine}${reasonLine}</p>
             </div>            
             <button
               class='record-delete'
@@ -193,7 +196,10 @@
 
   function fillSettingsForm() {
     const settings = getSettings()
-    document.getElementById('setting-school').value = settings.schoolName
+    const school = settings.schoolName
+    document.getElementById('setting-school').value = SCHOOLS.indexOf(school) === -1
+      ? DEFAULT_SETTINGS.schoolName
+      : school
     document.getElementById('setting-start').value = settings.startTime
     document.getElementById('setting-grace').value = settings.graceMinutes
     document.getElementById('setting-export-email').value = settings.exportEmail || ''
@@ -425,10 +431,10 @@
     radios.forEach(function (radio) {
       radio.required = tardy
     })
-    const unexcused = tardy && selectedExcuse() === 'unexcused'
-    reasonWrap.hidden = !unexcused
-    reason.required = unexcused
-    if (!unexcused) reason.value = ''
+    const excused = tardy && selectedExcuse() === 'excused'
+    reasonWrap.hidden = !excused
+    reason.required = excused
+    if (!excused) reason.value = ''
   }
 
   function openConfirm(values, fromScan) {
@@ -538,6 +544,7 @@
         'Student Name': record.name,
         'Student ID': record.studentId,
         Grade: record.grade || '',
+        School: record.school || '',
         Date: localDateKey(when),
         Time: formatTime(when),
         Timestamp: when.toISOString(),
@@ -716,16 +723,17 @@
     const tardy = isTardyAt(now, settings)
     const tardyExcuse = tardy ? selectedExcuse() : ''
     const tardyReason =
-      tardy && tardyExcuse === 'unexcused'
+      tardy && tardyExcuse === 'excused'
         ? document.getElementById('field-tardy-reason').value.trim()
         : ''
     if (tardy && !tardyExcuse) return
-    if (tardyExcuse === 'unexcused' && !tardyReason) return
+    if (tardyExcuse === 'excused' && !tardyReason) return
     const record = {
       id: 'ck_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
       name: window.parseIdCard.toDisplayName(document.getElementById('field-name').value),
       studentId: document.getElementById('field-id').value.replace(/\s+/g, ''),
       grade: document.getElementById('field-grade').value.trim(),
+      school: settings.schoolName,
       scannedAt: now.toISOString(),
       tardy: tardy,
       tardyExcuse: tardyExcuse,
