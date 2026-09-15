@@ -495,6 +495,10 @@ label {
   display: none;
 }
 
+#tardy-reason-wrap {
+  margin-top: 1rem;
+}
+
 .tardy-details legend {
   padding: 0 6px;
   font-size: 0.92rem;
